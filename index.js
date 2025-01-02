@@ -38,7 +38,7 @@ fs.createReadStream(file)
 
     input.forEach((row) => {
       const data = settings.pairs
-        .map((e) => e.map((column) => (Number(column) + settings.columnShift)).toString())
+        .map((e) => e.map((column) => (Number(column) + settings.columnShift).toString()))
         .reduce((acc, array) => {
           const coordinates = [row[settings.wspX], row[settings.wspY]];
           const v = row[array[0]];
