@@ -3,13 +3,13 @@ const fs = require('fs');
 const path = require('path');
 
 //! Załóż w katalogu Csv-parser katalog input_files i do niego wrzuć pliki do konwersji
-// ścieżka do pliku
-const filePath = 'input_files/data.csv';
+// ścieżka do konwertowanego pliku:
+const filePath = 'input_files/test2.csv';
 
-// kolumny:
+// ustawienia kolumn:
 const settings = {
   delimiter: ',', // separator wartości w pliku csv
-  columnShift: 0, // przesunięcie wszystkich kolumn o index
+  columnShift: 0, // przesunięcie wszystkich kolumn (V, H) o index (bez współrzędnych) (jak nie ma 3 kolumn między współrzędnymi a V1 i H1 to wpisujesz -3)
   wspX: 3,
   wspY: 4,
   pairs: [
@@ -18,11 +18,14 @@ const settings = {
     [12, 13], // [V3, H3]
     [14, 15], // [V4, H4]
     [16, 17], // [V5, H5]
+    // Dodaj następne jak potrzeba
   ],
-  newFilePrefix: '',
+  newFilePrefix: '', // prefix dla plików po konwersji (opcjonalnie żeby się nie myliły)
 };
 
-fs.mkdirSync(path.join(__dirname, 'input_files/transformed'), { recursive: true });
+if (!fs.existsSync(path.join(__dirname, 'input_files/transformed'))) {
+  fs.mkdirSync(path.join(__dirname, 'input_files/transformed'), { recursive: true });
+}
 const file = path.join(process.cwd(), filePath);
 const input = [];
 const output = [];
@@ -30,6 +33,9 @@ fs.createReadStream(file)
   .pipe(csv({ headers: false }))
   .on('data', (data) => input.push(data))
   .on('end', () => {
+    console.log(`Przed konwersją: ${input.length} wierszy`);
+    let counter = 0;
+
     input.forEach((row) => {
       const data = settings.pairs
         .map((e) => e.map((column) => column + settings.columnShift))
@@ -40,6 +46,7 @@ fs.createReadStream(file)
 
           if (v && h) {
             coordinates.push(v, h);
+            counter++;
             return [...acc, coordinates.map((v) => '"' + v + '"').join(settings.delimiter)];
           }
 
@@ -49,5 +56,6 @@ fs.createReadStream(file)
       output.push(data.join('\n'));
     });
 
-    fs.writeFileSync(`./input_files/transformed/${newFilePrefix}${filePath.split('/').pop()}`, output.join('\n'));
+    console.log(`Po konwersji: ${counter} wierszy`);
+    fs.writeFileSync(`./input_files/transformed/${settings.newFilePrefix}${filePath.split('/').pop()}`, output.join('\n'));
   });
