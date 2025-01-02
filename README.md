@@ -23,3 +23,5 @@
 - Powtórz `npm start` dla każdego kolejnego pliku
 
 - Wyniki konwersji zostaną wyświetlone w konsoli.
+
+- Pliki po konwersji będą w katalogu `input_files/transformed`
