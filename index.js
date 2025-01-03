@@ -35,22 +35,26 @@ fs.createReadStream(file)
   .on('end', () => {
     console.log(`Przed konwersją: ${input.length} wierszy`);
     let counter = 0;
-
     input.forEach((row) => {
+      let h = 0;
       const data = settings.pairs
         .map((e) => e.map((column) => (Number(column) + settings.columnShift).toString()))
         .reduce((acc, array) => {
-          const coordinates = [row[settings.wspX], row[settings.wspY]];
-          const v = row[array[0]];
-          const h = row[array[1]];
+          try {
+            const coordinates = [row[settings.wspX], row[settings.wspY]];
+            const v = row[array[0]];
+            h += !!row[array[1]] ? Number(row[array[1]].replace(/\,/g, '.')) : 0;
 
-          if (v && h) {
-            coordinates.push(v, h);
-            counter++;
-            return [...acc, coordinates.map((v) => '"' + v + '"').join(settings.delimiter)];
+            if (v && h) {
+              coordinates.push(v, h);
+              counter++;
+              return [...acc, coordinates.map((v) => ('"' + v + '"').replace(/\,/g, '.')).join(settings.delimiter)];
+            }
+
+            return acc;
+          } catch (e) {
+            console.log(e);
           }
-
-          return acc;
         }, []);
 
       output.push(data.join('\n'));
