@@ -37,16 +37,20 @@ fs.createReadStream(file)
     let counter = 0;
     input.forEach((row) => {
       let h = 0;
+      let time = 0;
       const data = settings.pairs
         .map((e) => e.map((column) => (Number(column) + settings.columnShift).toString()))
         .reduce((acc, array) => {
           try {
             const coordinates = [row[settings.wspX], row[settings.wspY]];
             const v = row[array[0]];
-            h += !!row[array[1]] ? Number(row[array[1]].replace(/\,/g, '.')) : 0;
+            const currentHeight = !!row[array[1]] ? Number(row[array[1]].replace(/\,/g, '.')) : 0;
+            h += currentHeight;
 
-            if (v && h) {
+            if (v && currentHeight) {
               coordinates.push(v, h);
+              time += (currentHeight / Number(v.replace(/\,/g, '.'))) * 2000;
+              coordinates.push(time.toFixed(1));
               counter++;
               return [...acc, coordinates.map((v) => ('"' + v + '"').replace(/\,/g, '.')).join(settings.delimiter)];
             }
